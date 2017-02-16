@@ -32,7 +32,7 @@ type LibcomposeOrchestrateStartOperation struct {
 
 // Define the libCompose Orchestrate Down operation usage
 func (start *LibcomposeOrchestrateStartOperation) Id() string {
-	return "libcompose."down.BaseOrchestrationStartOperation.Id()
+	return "libcompose." + start.BaseOrchestrationStartOperation.Id()
 }
 
 // Define the libCompose Orchestrate Start operation usage

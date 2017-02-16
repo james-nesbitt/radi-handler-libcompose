@@ -22,9 +22,8 @@ import (
  */
 
 const (
-	OPERATION_ID_COMPOSE_MONITOR_LOGS = api_monitor.OPERATION_ID_MONITOR_LOGS + ".compose"
-
-	OPERATION_ID_COMPOSE_MONITOR_PS = "libcompose.monitor.ps"
+	OPERATION_ID_COMPOSE_MONITOR_LOGS = "monitor.libcompose.logs"
+	OPERATION_ID_COMPOSE_MONITOR_PS   = "monitor.libcompose.ps"
 )
 
 // An operations which streams the container logs from libcompose
@@ -109,17 +108,17 @@ type LibcomposeOrchestratePsOperation struct {
 
 // Label the operation
 func (ps *LibcomposeOrchestratePsOperation) Id() string {
-	return "libcompose.monitor.ps"
+	return OPERATION_ID_COMPOSE_MONITOR_PS
 }
 
 // Label the operation
 func (ps *LibcomposeOrchestratePsOperation) Label() string {
-	return "Ps"
+	return "List containers"
 }
 
 // Description for the operation
 func (ps *LibcomposeOrchestratePsOperation) Description() string {
-	return "This operation will list all containers."
+	return "List all containers used by libCompose."
 }
 
 // Man page for the operation

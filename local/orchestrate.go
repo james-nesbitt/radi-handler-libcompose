@@ -6,12 +6,13 @@ import (
 	api_orchestrate "github.com/wunderkraut/radi-api/operation/orchestrate"
 
 	handler_libcompose "github.com/wunderkraut/radi-handler-libcompose"
+	handler_local "github.com/wunderkraut/radi-handlers/local"
 )
 
 // A handler for local orchestration using libcompose
 type LocalHandler_Orchestrate struct {
-	LocalHandler_Base
-	LocalHandler_SettingWrapperBase
+	handler_local.LocalHandler_Base
+	handler_local.LocalHandler_SettingWrapperBase
 	handler_libcompose.BaseLibcomposeHandler
 }
 

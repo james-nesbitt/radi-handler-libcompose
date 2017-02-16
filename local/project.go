@@ -2,7 +2,6 @@ package local
 
 import (
 	"errors"
-	"io"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -10,11 +9,12 @@ import (
 
 	api_operation "github.com/wunderkraut/radi-api/operation"
 	api_property "github.com/wunderkraut/radi-api/property"
-	api_usage "github.com/wunderkraut/radi-api/usage"
+	api_result "github.com/wunderkraut/radi-api/result"
 
 	api_project "github.com/wunderkraut/radi-api/operation/project"
-	api_result "github.com/wunderkraut/radi-api/result"
+
 	handler_bytesource "github.com/wunderkraut/radi-handlers/bytesource"
+	handler_local "github.com/wunderkraut/radi-handlers/local"
 )
 
 const (
@@ -28,7 +28,7 @@ const (
 
 // A handler for local project handler
 type LocalHandler_Project struct {
-	LocalHandler_Base
+	handler_local.LocalHandler_Base
 }
 
 // [Handler.]Id returns a string ID for the handler
@@ -40,8 +40,10 @@ func (handler *LocalHandler_Project) Id() string {
 func (handler *LocalHandler_Project) Operations() api_operation.Operations {
 	ops := api_operation.New_SimpleOperations()
 
+	byteSourceFileSettings := handler.LocalHandler_Base.LocalAPISettings().BytesourceFileSettings
+
 	// Now we can add project operations that use that Base class
-	ops.Add(api_operation.Operation(&LocalProjectInitOperation{fileSettings: handler.LocalHandler_Base.settings.BytesourceFileSettings}))
+	ops.Add(api_operation.Operation(&LocalProjectInitOperation{fileSettings: byteSourceFileSettings}))
 
 	return ops.Operations()
 }

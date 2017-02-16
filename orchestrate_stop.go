@@ -34,7 +34,7 @@ type LibcomposeOrchestrateStopOperation struct {
 
 // Define the libCompose Orchestrate Down operation usage
 func (stop *LibcomposeOrchestrateStopOperation) Id() string {
-	return "libcompose."down.BaseOrchestrationStopOperation.Id()
+	return "libcompose." + stop.BaseOrchestrationStopOperation.Id()
 }
 
 // Define the libCompose Orchestrate Stop operation usage

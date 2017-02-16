@@ -5,7 +5,9 @@ import (
 	api_operation "github.com/wunderkraut/radi-api/operation"
 
 	api_command "github.com/wunderkraut/radi-api/operation/command"
+
 	handler_libcompose "github.com/wunderkraut/radi-handler-libcompose"
+	handler_local "github.com/wunderkraut/radi-handlers/local"
 )
 
 /**
@@ -14,8 +16,8 @@ import (
 
 // A handler for local command
 type LocalHandler_Command struct {
-	LocalHandler_Base
-	LocalHandler_ConfigWrapperBase
+	handler_local.LocalHandler_Base
+	handler_local.LocalHandler_ConfigWrapperBase
 	handler_libcompose.BaseLibcomposeHandler
 }
 

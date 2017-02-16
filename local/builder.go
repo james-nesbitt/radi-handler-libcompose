@@ -9,14 +9,15 @@ import (
 	api_api "github.com/wunderkraut/radi-api/api"
 	api_builder "github.com/wunderkraut/radi-api/builder"
 	api_handler "github.com/wunderkraut/radi-api/handler"
-	api_operation "github.com/wunderkraut/radi-api/operation"
+	api_result "github.com/wunderkraut/radi-api/result"
+
 	api_command "github.com/wunderkraut/radi-api/operation/command"
 	api_config "github.com/wunderkraut/radi-api/operation/config"
 	api_orchestrate "github.com/wunderkraut/radi-api/operation/orchestrate"
-	api_security "github.com/wunderkraut/radi-api/operation/security"
 	api_setting "github.com/wunderkraut/radi-api/operation/setting"
-	api_result "github.com/wunderkraut/radi-api/result"
+
 	handler_libcompose "github.com/wunderkraut/radi-handler-libcompose"
+	handler_local "github.com/wunderkraut/radi-handlers/local"
 )
 
 /**
@@ -29,6 +30,9 @@ import (
 // Provide a handler for building all local operations
 type LocalBuilder struct {
 	handler_local.LocalBuilder
+	settings handler_local.LocalAPISettings
+
+	parent api_api.API
 
 	common_libcompose *handler_libcompose.BaseLibcomposeHandler
 
@@ -37,15 +41,27 @@ type LocalBuilder struct {
 }
 
 // Constructor for LocalBuilder
-func New_LocalBuilder_FromSettings(settings LocalAPISettings) *LocalBuilder {
+func New_LocalBuilder(settings handler_local.LocalAPISettings) *LocalBuilder {
 	return &LocalBuilder{
-		LocalBuilder: api_local.New_LocalBuilder(settings),
+		LocalBuilder: *handler_local.New_LocalBuilder(settings),
+		settings:     settings,
 	}
 }
 
 // IBuilder ID
 func (builder *LocalBuilder) Id() string {
 	return "libcompose_local"
+}
+
+// Builder Settings
+func (builder *LocalBuilder) LocalAPISettings() handler_local.LocalAPISettings {
+	return builder.settings
+}
+
+// Set the parent API, which may need to build Config and Setting Wrappers
+func (builder *LocalBuilder) SetAPI(parent api_api.API) {
+	builder.parent = parent
+	builder.LocalBuilder.SetAPI(parent)
 }
 
 // Initialize the handler for certain implementations
@@ -67,30 +83,20 @@ func (builder *LocalBuilder) Activate(implementations api_builder.Implementation
 	return api_result.MakeSuccessfulResult()
 }
 
-// Create a shareable common base
-func (builder *LocalBuilder) base() *LocalHandler_Base {
-	if builder.common_base == nil {
-
-		log.Debug("Building new base handler")
-
-		// Create a base handler, which just wraps the settings
-		builder.common_base = New_LocalHandler_Base(&builder.settings)
-	}
-	return builder.common_base
-}
-
 // Build a Handler base that produces LibCompose projects
 func (builder *LocalBuilder) base_libcompose() *handler_libcompose.BaseLibcomposeHandler {
 	if builder.common_libcompose == nil {
 
-		log.WithFields(log.Fields{"builder.Setting": builder.Setting}).Debug("Building new Base LibCompose")
+		log.WithFields(log.Fields{"builder.LocalAPISettings()": builder.LocalAPISettings()}).Debug("Building new Base LibCompose")
 
 		// Set a project name
 		projectName := "default"
 
-		if builder.Setting == nil {
+		settingWrapper := builder.SettingWrapper()
+
+		if settingWrapper == nil {
 			log.WithError(errors.New("No setting wrapper avaialble")).Error("Could not set base libCompose project name.")
-		} else if settingsProjectName, err := builder.Setting.Get("Project"); err == nil {
+		} else if settingsProjectName, err := settingWrapper.Get("Project"); err == nil {
 			projectName = settingsProjectName
 		} else {
 			log.WithError(errors.New("Setting value not found in handler config")).Error("Could not set base libCompose project name.")
@@ -116,54 +122,28 @@ func (builder *LocalBuilder) base_libcompose() *handler_libcompose.BaseLibcompos
 }
 
 // Add local Handlers for Config and Settings
-func (builder *LocalBuilder) build_Config() api_result.Result {
-	// Build a config whandler
-	local_config := LocalHandler_Config{
-		LocalHandler_Base: *builder.base(),
+func (builder *LocalBuilder) ConfigWrapper() api_config.ConfigWrapper {
+	// Build a configWrapper if needed
+	if builder.Config == nil {
+		builder.Config = api_config.New_SimpleConfigWrapper(builder.parent.Operations())
 	}
-
-	res := local_config.Validate()
-	<-res.Finished()
-
-	if res.Success() {
-		builder.AddHandler(api_handler.Handler(&local_config))
-		// Get a config wrapper for other handlers
-		builder.Config = local_config.ConfigWrapper()
-
-		log.WithFields(log.Fields{"ConfigWrapper": builder.Config}).Debug("localBuilder: Built Config Handler")
-	}
-
-	return res
+	return builder.Config
 }
 
 // Add local Handlers for Setting
-func (builder *LocalBuilder) build_Setting() api_result.Result {
-
-	// Build a settings handler which uses the configwrapper and the base
-	local_setting := LocalHandler_Setting{
-		LocalHandler_Base: *builder.base(),
+func (builder *LocalBuilder) SettingWrapper() api_setting.SettingWrapper {
+	// Build a configWrapper if needed
+	if builder.Setting == nil {
+		builder.Setting = api_setting.New_SimpleSettingWrapper(builder.parent.Operations())
 	}
-	local_setting.SetConfigWrapper(builder.Config)
-
-	res := local_setting.Validate()
-	<-res.Finished()
-
-	if res.Success() {
-		builder.AddHandler(api_handler.Handler(&local_setting))
-		// Get a settings wrapper for other handlers
-		builder.Setting = local_setting.SettingWrapper()
-
-		log.WithFields(log.Fields{"SettingWrapper": builder.Setting}).Debug("localBuilder: Built Setting Handler")
-	}
-
-	return res
+	return builder.Setting
 }
 
 // Make a Local based API object for "no existing project found" to allow for project operations
 func (builder *LocalBuilder) build_Project() api_result.Result {
 	// Build a config wrapper using the base for settings
 	local_project := LocalHandler_Project{
-		LocalHandler_Base: *builder.base(),
+		LocalHandler_Base: *builder.Base(),
 	}
 
 	res := local_project.Validate()
@@ -172,7 +152,7 @@ func (builder *LocalBuilder) build_Project() api_result.Result {
 	if res.Success() {
 		builder.AddHandler(api_handler.Handler(&local_project))
 
-		log.Debug("localBuilder: Built Project Handler")
+		log.Debug("LibCompose:localBuilder: Built Project Handler")
 	}
 
 	return res
@@ -182,10 +162,10 @@ func (builder *LocalBuilder) build_Project() api_result.Result {
 func (builder *LocalBuilder) build_Orchestrate() api_result.Result {
 	// Build an orchestration handler
 	local_orchestration := LocalHandler_Orchestrate{
-		LocalHandler_Base:     *builder.base(),
+		LocalHandler_Base:     *builder.Base(),
 		BaseLibcomposeHandler: *builder.base_libcompose(),
 	}
-	local_orchestration.SetSettingWrapper(builder.Setting)
+	local_orchestration.SetSettingWrapper(builder.SettingWrapper())
 
 	res := local_orchestration.Validate()
 	<-res.Finished()
@@ -195,7 +175,7 @@ func (builder *LocalBuilder) build_Orchestrate() api_result.Result {
 		// Get an orchestrate wrapper for other handlers
 		builder.Orchestrate = local_orchestration.OrchestrateWrapper()
 
-		log.WithFields(log.Fields{"OrchestrateWrapper": builder.Orchestrate}).Debug("localBuilder: Built Orchestrate handler")
+		log.WithFields(log.Fields{"OrchestrateWrapper": builder.Orchestrate}).Debug("LibCompose:localBuilder: Built Orchestrate handler")
 	}
 
 	return res
@@ -205,10 +185,10 @@ func (builder *LocalBuilder) build_Orchestrate() api_result.Result {
 func (builder *LocalBuilder) build_Monitor() api_result.Result {
 	// Build an orchestration handler
 	local_monitor := LocalHandler_Monitor{
-		LocalHandler_Base:     *builder.base(),
+		LocalHandler_Base:     *builder.Base(),
 		BaseLibcomposeHandler: *builder.base_libcompose(),
 	}
-	local_monitor.SetSettingWrapper(builder.Setting)
+	local_monitor.SetSettingWrapper(builder.SettingWrapper())
 
 	res := local_monitor.Validate()
 	<-res.Finished()
@@ -216,7 +196,7 @@ func (builder *LocalBuilder) build_Monitor() api_result.Result {
 	if res.Success() {
 		builder.AddHandler(api_handler.Handler(&local_monitor))
 
-		log.Debug("localBuilder: Built Monitor handler")
+		log.Debug("LibCompose:localBuilder: Built Monitor handler")
 	}
 
 	return res
@@ -226,10 +206,11 @@ func (builder *LocalBuilder) build_Monitor() api_result.Result {
 func (builder *LocalBuilder) build_Command() api_result.Result {
 	// Build a command Handler
 	local_command := LocalHandler_Command{
-		LocalHandler_Base:     *builder.base(),
+		LocalHandler_Base:     *builder.Base(),
 		BaseLibcomposeHandler: *builder.base_libcompose(),
 	}
-	local_command.SetConfigWrapper(builder.Config)
+
+	local_command.SetConfigWrapper(builder.ConfigWrapper())
 
 	res := local_command.Validate()
 	<-res.Finished()
@@ -239,29 +220,7 @@ func (builder *LocalBuilder) build_Command() api_result.Result {
 		// Get an orchestrate wrapper for other handlers
 		builder.Command = local_command.CommandWrapper()
 
-		log.WithFields(log.Fields{"CommandWrapper": builder.Command}).Debug("localBuilder: Built Command Handler")
-	}
-
-	return res
-}
-
-// Add local Handlers for Security operations
-func (builder *LocalBuilder) build_Security() api_result.Result {
-	// Build a command Handler
-	local_security := LocalHandler_Security{
-		LocalHandler_Base: *builder.base(),
-	}
-	local_security.SetConfigWrapper(builder.Config)
-
-	res := local_security.Validate()
-	<-res.Finished()
-
-	if res.Success() {
-		builder.AddHandler(api_handler.Handler(&local_security))
-		// Get an orchestrate wrapper for other handlers
-		builder.Security = local_security.SecurityWrapper()
-
-		log.WithFields(log.Fields{"CSecurityWrapper": builder.Command}).Debug("localBuilder: Built Security Handler")
+		log.WithFields(log.Fields{"CommandWrapper": builder.Command}).Debug("LibCompose:localBuilder: Built Command Handler")
 	}
 
 	return res

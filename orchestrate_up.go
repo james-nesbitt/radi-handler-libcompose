@@ -48,7 +48,7 @@ type LibcomposeOrchestrateUpOperation struct {
 
 // Define the libCompose Orchestrate Down operation usage
 func (up *LibcomposeOrchestrateUpOperation) Id() string {
-	return "libcompose."down.BaseOrchestrationUpOperation.Id()
+	return "libcompose." + up.BaseOrchestrationUpOperation.Id()
 }
 
 // Define the libCompose Orchestrate Up operation usage

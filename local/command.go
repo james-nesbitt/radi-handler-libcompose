@@ -1,9 +1,11 @@
 package local
 
 import (
+	api_handler "github.com/wunderkraut/radi-api/handler"
 	api_operation "github.com/wunderkraut/radi-api/operation"
+
 	api_command "github.com/wunderkraut/radi-api/operation/command"
-	handlers_libcompose "github.com/wunderkraut/radi-handlers/libcompose"
+	handler_libcompose "github.com/wunderkraut/radi-handler-libcompose"
 )
 
 /**
@@ -14,35 +16,36 @@ import (
 type LocalHandler_Command struct {
 	LocalHandler_Base
 	LocalHandler_ConfigWrapperBase
-	handlers_libcompose.BaseLibcomposeHandler
+	handler_libcompose.BaseLibcomposeHandler
 }
 
 // Identify the handler
-func (handler *LocalHandler_Command) Id() string {
-	return "local.command"
+func (commHandler *LocalHandler_Command) Handler() api_handler.Handler {
+	return api_handler.Handler(commHandler)
+}
+
+// Identify the handler
+func (commHandler *LocalHandler_Command) Id() string {
+	return "libcompose_local.command"
 }
 
 // [Handler.]Init tells the LocalHandler_Orchestrate to prepare it's operations
-func (handler *LocalHandler_Command) Init() api_operation.Result {
-	result := api_operation.New_StandardResult()
-
-	ops := api_operation.Operations{}
+func (commHandler *LocalHandler_Command) Operations() api_operation.Operations {
+	ops := api_operation.New_SimpleOperations()
 
 	// Get shared base operation from the base handler
-	baseLibcompose := *handler.BaseLibcomposeHandler.LibComposeBaseOp
+	baseLibcompose := *commHandler.BaseLibcomposeHandler.BaseLibcomposeNameFilesOperation()
 
 	// Make a wrapper for the Command Config interpretation, based on itnerpreting YML settings
-	wrapper := handlers_libcompose.CommandConfigWrapper(handlers_libcompose.New_BaseCommandConfigWrapperYmlOperation(handler.ConfigWrapper()))
+	wrapper := handler_libcompose.CommandConfigWrapper(handler_libcompose.New_BaseCommandConfigWrapperYmlOperation(commHandler.ConfigWrapper()))
 
-	ops.Add(api_operation.Operation(&handlers_libcompose.LibcomposeCommandListOperation{BaseLibcomposeNameFilesOperation: baseLibcompose, Wrapper: wrapper}))
-	ops.Add(api_operation.Operation(&handlers_libcompose.LibcomposeCommandGetOperation{BaseLibcomposeNameFilesOperation: baseLibcompose, Wrapper: wrapper}))
+	ops.Add(api_operation.Operation(&handler_libcompose.LibcomposeCommandListOperation{BaseLibcomposeNameFilesOperation: baseLibcompose, Wrapper: wrapper}))
+	ops.Add(api_operation.Operation(&handler_libcompose.LibcomposeCommandGetOperation{BaseLibcomposeNameFilesOperation: baseLibcompose, Wrapper: wrapper}))
 
-	handler.operations = &ops
-
-	return api_operation.Result(result)
+	return ops.Operations()
 }
 
 // Make OrchestrateWrapper
-func (handler *LocalHandler_Command) CommandWrapper() api_command.CommandWrapper {
-	return api_command.New_SimpleCommandWrapper(handler.operations)
+func (commHandler *LocalHandler_Command) CommandWrapper() api_command.CommandWrapper {
+	return api_command.New_SimpleCommandWrapper(commHandler.Operations())
 }

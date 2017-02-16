@@ -10,8 +10,9 @@ import (
 	libCompose_dockerctx "github.com/docker/libcompose/docker/ctx"
 	libCompose_project "github.com/docker/libcompose/project"
 
-	api_operation "github.com/wunderkraut/radi-api/operation"
-	handlers_bytesource "github.com/wunderkraut/radi-handlers/bytesource"
+	api_property "github.com/wunderkraut/radi-api/property"
+
+	handler_bytesource "github.com/wunderkraut/radi-handlers/bytesource"
 )
 
 /**
@@ -19,24 +20,24 @@ import (
  * are needed to handler orchestration through libcompose
  */
 
-func MakeComposeProject(properties *api_operation.Properties) (*ComposeProject, bool) {
+func MakeComposeProject(props api_property.Properties) (*ComposeProject, bool) {
 
-	projectNameProp, _ := properties.Get(OPERATION_PROPERTY_LIBCOMPOSE_PROJECTNAME)
+	projectNameProp, _ := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_PROJECTNAME)
 	composeProjectName := projectNameProp.Get().(string)
 
-	bytesourceFilesettingsProp, _ := properties.Get(handlers_bytesource.OPERATION_PROPERTY_BYTESOURCE_FILESETTINGS)
-	pathSettings := bytesourceFilesettingsProp.Get().(handlers_bytesource.BytesourceFileSettings)
+	bytesourceFilesettingsProp, _ := props.Get(handler_bytesource.OPERATION_PROPERTY_BYTESOURCE_FILESETTINGS)
+	pathSettings := bytesourceFilesettingsProp.Get().(handler_bytesource.BytesourceFileSettings)
 
-	projectFilesProp, _ := properties.Get(OPERATION_PROPERTY_LIBCOMPOSE_COMPOSEFILES)
+	projectFilesProp, _ := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_COMPOSEFILES)
 	composeFiles := projectFilesProp.Get().([]string)
 
-	contextProp, _ := properties.Get(OPERATION_PROPERTY_LIBCOMPOSE_CONTEXT)
+	contextProp, _ := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_CONTEXT)
 	netContext := contextProp.Get().(context.Context)
 
-	outputProp, _ := properties.Get(OPERATION_PROPERTY_LIBCOMPOSE_OUTPUT)
+	outputProp, _ := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_OUTPUT)
 	outputWriter := outputProp.Get().(io.Writer)
 
-	errProp, _ := properties.Get(OPERATION_PROPERTY_LIBCOMPOSE_ERROR)
+	errProp, _ := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_ERROR)
 	errorWriter := errProp.Get().(io.Writer)
 
 	loggerFactory := NewLibcomposeLoggerFactory(outputWriter, errorWriter)
@@ -66,12 +67,12 @@ func MakeComposeProject(properties *api_operation.Properties) (*ComposeProject, 
 	return &composeProject, true
 }
 
-// A wundertools wrapper for the APIProject class
+// A Radi wrapper for the libcompose/project.APIProject class
 type ComposeProject struct {
 	libCompose_project.APIProject
 	netContext     context.Context
 	composeContext *libCompose_dockerctx.Context
-	pathSettings   handlers_bytesource.BytesourceFileSettings
+	pathSettings   handler_bytesource.BytesourceFileSettings
 }
 
 // get a specific service

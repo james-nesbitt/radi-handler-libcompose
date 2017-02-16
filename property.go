@@ -3,7 +3,8 @@ package libcompose
 import (
 	// libCompose_options "github.com/docker/libcompose/project/options"
 
-	api_operation "github.com/wunderkraut/radi-api/operation"
+	api_property "github.com/wunderkraut/radi-api/property"
+	api_usage "github.com/wunderkraut/radi-api/usage"
 )
 
 const (
@@ -53,7 +54,7 @@ const (
 
 // Project Name Property for a docker.libCompose project
 type LibcomposeProjectnameProperty struct {
-	api_operation.StringProperty
+	api_property.StringProperty
 }
 
 // Id for the Property
@@ -72,13 +73,13 @@ func (name *LibcomposeProjectnameProperty) Description() string {
 }
 
 // Is the Property internal only
-func (name *LibcomposeProjectnameProperty) Internal() bool {
-	return true
+func (name *LibcomposeProjectnameProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Internal()
 }
 
 // YAML file list Property for a docker.libCompose project
 type LibcomposeComposefilesProperty struct {
-	api_operation.StringSliceProperty
+	api_property.StringSliceProperty
 }
 
 // Id for the Property
@@ -97,13 +98,13 @@ func (files *LibcomposeComposefilesProperty) Description() string {
 }
 
 // Is the Property internal only
-func (files *LibcomposeComposefilesProperty) Internal() bool {
-	return true
+func (files *LibcomposeComposefilesProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Internal()
 }
 
 // A libcompose Property for net context limiting
 type LibcomposeContextProperty struct {
-	api_operation.ContextProperty
+	api_property.ContextProperty
 }
 
 // Id for the Property
@@ -122,13 +123,13 @@ func (contextConf *LibcomposeContextProperty) Description() string {
 }
 
 // Is the Property internal only
-func (contextConf *LibcomposeContextProperty) Internal() bool {
-	return true
+func (contextConf *LibcomposeContextProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Internal()
 }
 
 // Output handler Property for a docker.libCompose project
 type LibcomposeOutputProperty struct {
-	api_operation.WriterProperty
+	api_property.WriterProperty
 }
 
 // Id for the Property
@@ -147,13 +148,13 @@ func (output *LibcomposeOutputProperty) Description() string {
 }
 
 // Is the Property internal only
-func (output *LibcomposeOutputProperty) Internal() bool {
-	return true
+func (output *LibcomposeOutputProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Internal()
 }
 
 // Error handler Property for a docker.libCompose project
 type LibcomposeErrorProperty struct {
-	api_operation.WriterProperty
+	api_property.WriterProperty
 }
 
 // Id for the Property
@@ -172,8 +173,8 @@ func (err *LibcomposeErrorProperty) Description() string {
 }
 
 // Is the Property internal only
-func (err *LibcomposeErrorProperty) Internal() bool {
-	return true
+func (err *LibcomposeErrorProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Internal()
 }
 
 /**
@@ -183,7 +184,7 @@ func (err *LibcomposeErrorProperty) Internal() bool {
 
 // BUILD : Property for a docker.libCompose project to indicate that a build should ignore cached image layers
 type LibcomposeNoCacheProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -202,13 +203,13 @@ func (nocache *LibcomposeNoCacheProperty) Description() string {
 }
 
 // Is the Property internal only
-func (nocache *LibcomposeNoCacheProperty) Internal() bool {
-	return false
+func (nocache *LibcomposeNoCacheProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // Property for a docker.libCompose project to indicate that a process remove ... something
 type LibcomposeForceRemoveProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -227,13 +228,13 @@ func (forceremove *LibcomposeForceRemoveProperty) Description() string {
 }
 
 // Is the Property internal only
-func (forceremove *LibcomposeForceRemoveProperty) Internal() bool {
-	return false
+func (forceremove *LibcomposeForceRemoveProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // Property for a docker.libCompose project to indicate that a process hsould stay attached and follow
 type LibcomposePullProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -252,13 +253,13 @@ func (pull *LibcomposePullProperty) Description() string {
 }
 
 // Is the Property internal only
-func (pull *LibcomposePullProperty) Internal() bool {
-	return false
+func (pull *LibcomposePullProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // Property for a docker.libCompose project to indicate that a process hsould stay attached and follow
 type LibcomposeDetachProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -277,13 +278,13 @@ func (detach *LibcomposeDetachProperty) Description() string {
 }
 
 // Is the Property internal only
-func (detach *LibcomposeDetachProperty) Internal() bool {
-	return false
+func (detach *LibcomposeDetachProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // UP : Property for a docker.libCompose project to indicate that a process should not create missing containers
 type LibcomposeNoRecreateProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -302,13 +303,13 @@ func (norecreate *LibcomposeNoRecreateProperty) Description() string {
 }
 
 // Is the Property internal only
-func (norecreate *LibcomposeNoRecreateProperty) Internal() bool {
-	return false
+func (norecreate *LibcomposeNoRecreateProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // UP|RECREATE : Property for a docker.libCompose project to indicate that a process should build containers even if they are found
 type LibcomposeForceRecreateProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -327,13 +328,13 @@ func (forcerecreate *LibcomposeForceRecreateProperty) Description() string {
 }
 
 // Is the Property internal only
-func (forcerecreate *LibcomposeForceRecreateProperty) Internal() bool {
-	return false
+func (forcerecreate *LibcomposeForceRecreateProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // UP|CREATE : Property for a docker.libCompose project to indicate that a process should not build any containers
 type LibcomposeNoBuildProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -352,13 +353,13 @@ func (dontbuild *LibcomposeNoBuildProperty) Description() string {
 }
 
 // Is the Property internal only
-func (dontbuild *LibcomposeNoBuildProperty) Internal() bool {
-	return false
+func (dontbuild *LibcomposeNoBuildProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // UP|CREATE : Property for a docker.libCompose project to indicate that a process should force rebuilding images
 type LibcomposeForceRebuildProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -377,13 +378,13 @@ func (forcerebuild *LibcomposeForceRebuildProperty) Description() string {
 }
 
 // Is the Property internal only
-func (forcerebuild *LibcomposeForceRebuildProperty) Internal() bool {
-	return false
+func (forcerebuild *LibcomposeForceRebuildProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // DOWN|DELETE : Property for a docker.libCompose project to indicate that a process should remove any volumes
 type LibcomposeRemoveVolumesProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -402,13 +403,13 @@ func (removevolumes *LibcomposeRemoveVolumesProperty) Description() string {
 }
 
 // Is the Property internal only
-func (removevolumes *LibcomposeRemoveVolumesProperty) Internal() bool {
-	return false
+func (removevolumes *LibcomposeRemoveVolumesProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // DOWN : Property for a docker.libCompose project to indicate that a process should remove any orphan containers
 type LibcomposeRemoveOrphansProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -427,13 +428,13 @@ func (removeorphans *LibcomposeRemoveOrphansProperty) Description() string {
 }
 
 // Is the Property internal only
-func (removeorphans *LibcomposeRemoveOrphansProperty) Internal() bool {
-	return false
+func (removeorphans *LibcomposeRemoveOrphansProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // DOWN : Property for a docker.libCompose project to indicate that a process should remove images of a certain type
 type LibcomposeRemoveImageTypeProperty struct {
-	api_operation.StringProperty
+	api_property.StringProperty
 }
 
 // Id for the Property
@@ -452,13 +453,13 @@ func (removeimagetypes *LibcomposeRemoveImageTypeProperty) Description() string 
 }
 
 // Is the Property internal only
-func (removeimagetypes *LibcomposeRemoveImageTypeProperty) Internal() bool {
-	return false
+func (removeimagetypes *LibcomposeRemoveImageTypeProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // DELETE : Property for a docker.libCompose project to indicate that a process should delete running containers
 type LibcomposeRemoveRunningProperty struct {
-	api_operation.BooleanProperty
+	api_property.BooleanProperty
 }
 
 // Id for the Property
@@ -477,13 +478,13 @@ func (removerunning *LibcomposeRemoveRunningProperty) Description() string {
 }
 
 // Is the Property internal only
-func (removerunning *LibcomposeRemoveRunningProperty) Internal() bool {
-	return false
+func (removerunning *LibcomposeRemoveRunningProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }
 
 // STOP : Property for a docker.libCompose project to indicate that how many seconds a process should run for before timing out
 type LibcomposeTimeoutProperty struct {
-	api_operation.IntProperty
+	api_property.IntProperty
 }
 
 // Id for the Property
@@ -502,6 +503,6 @@ func (timeout *LibcomposeTimeoutProperty) Description() string {
 }
 
 // Is the Property internal only
-func (timeout *LibcomposeTimeoutProperty) Internal() bool {
-	return false
+func (timeout *LibcomposeTimeoutProperty) Usage() api_usage.Usage {
+	return api_property.Usage_Optional()
 }

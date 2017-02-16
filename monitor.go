@@ -9,6 +9,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	api_operation "github.com/wunderkraut/radi-api/operation"
+	api_property "github.com/wunderkraut/radi-api/property"
+	api_result "github.com/wunderkraut/radi-api/result"
+	api_usage "github.com/wunderkraut/radi-api/usage"
+
 	api_monitor "github.com/wunderkraut/radi-api/operation/monitor"
 )
 
@@ -35,23 +39,27 @@ func (logs *LibcomposeMonitorLogsOperation) Id() string {
 }
 
 // Validate
-func (logs *LibcomposeMonitorLogsOperation) Validate() bool {
-	return true
+func (logs *LibcomposeMonitorLogsOperation) Usage() api_usage.Usage {
+	return api_operation.Usage_External()
+}
+
+func (logs *LibcomposeMonitorLogsOperation) Validate() api_result.Result {
+	return api_result.MakeSuccessfulResult()
 }
 
 // Provide static properties for the operation
-func (logs *LibcomposeMonitorLogsOperation) Properties() api_operation.Properties {
-	props := api_operation.Properties{}
+func (logs *LibcomposeMonitorLogsOperation) Properties() api_property.Properties {
+	props := api_property.New_SimplePropertiesEmpty()
 
 	props.Merge(logs.BaseLibcomposeNameFilesOperation.Properties())
-	props.Add(&LibcomposeDetachProperty{})
+	props.Add(api_property.Property(&LibcomposeDetachProperty{}))
 
-	return props
+	return props.Properties()
 }
 
 // Execute the libCompose monitor logs operation
-func (logs *LibcomposeMonitorLogsOperation) Exec(props *api_operation.Properties) api_operation.Result {
-	result := api_operation.New_StandardResult()
+func (logs *LibcomposeMonitorLogsOperation) Exec(props api_property.Properties) api_result.Result {
+	res := api_result.New_StandardResult()
 
 	// pass all confs to make a project
 	project, _ := MakeComposeProject(props)
@@ -63,8 +71,8 @@ func (logs *LibcomposeMonitorLogsOperation) Exec(props *api_operation.Properties
 	if netContextProp, found := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_CONTEXT); found {
 		netContext = netContextProp.Get().(context.Context)
 	} else {
-		result.MarkFailed()
-		result.AddError(errors.New("Libcompose up operation is missing the context property"))
+		res.MarkFailed()
+		res.AddError(errors.New("Libcompose up operation is missing the context property"))
 	}
 
 	var follow bool
@@ -72,8 +80,8 @@ func (logs *LibcomposeMonitorLogsOperation) Exec(props *api_operation.Properties
 	if followProp, found := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_DETACH); found {
 		follow = !followProp.Get().(bool)
 	} else {
-		result.AddError(errors.New("Libcompose logs operation is missing the detach property"))
-		result.MarkFailed()
+		res.AddError(errors.New("Libcompose logs operation is missing the detach property"))
+		res.MarkFailed()
 	}
 
 	// output handling test
@@ -81,17 +89,17 @@ func (logs *LibcomposeMonitorLogsOperation) Exec(props *api_operation.Properties
 		outputProp.Set(io.Writer(os.Stdout))
 	}
 
-	if result.Success() {
+	if res.Success() {
 		if err := project.APIProject.Log(netContext, follow); err != nil {
-			result.MarkFailed()
-			result.AddError(err)
-			result.AddError(errors.New("Could not attach to the project for logs"))
+			res.MarkFailed()
+			res.AddError(err)
+			res.AddError(errors.New("Could not attach to the project for logs"))
 		}
 	}
 
-	result.MarkFinished()
+	res.MarkFinished()
 
-	return api_operation.Result(result)
+	return res.Result()
 }
 
 // LibCompose based ps orchestrate operation
@@ -114,24 +122,29 @@ func (ps *LibcomposeOrchestratePsOperation) Description() string {
 	return "This operation will list all containers."
 }
 
+// Man page for the operation
+func (ps *LibcomposeOrchestratePsOperation) Help() string {
+	return ""
+}
+
 // Is this an internal API operation
-func (ps *LibcomposeOrchestratePsOperation) Internal() bool {
-	return false
+func (ps *LibcomposeOrchestratePsOperation) Usage() api_usage.Usage {
+	return api_operation.Usage_External()
 }
 
 // Validate the libCompose Orchestrate Ps operation
-func (ps *LibcomposeOrchestratePsOperation) Validate() bool {
-	return true
+func (ps *LibcomposeOrchestratePsOperation) Validate() api_result.Result {
+	return api_result.MakeSuccessfulResult()
 }
 
 // Provide static properties for the operation
-func (ps *LibcomposeOrchestratePsOperation) Properties() api_operation.Properties {
+func (ps *LibcomposeOrchestratePsOperation) Properties() api_property.Properties {
 	return ps.BaseLibcomposeNameFilesOperation.Properties()
 }
 
 // Execute the libCompose Orchestrate Ps operation
-func (ps *LibcomposeOrchestratePsOperation) Exec(props *api_operation.Properties) api_operation.Result {
-	result := api_operation.New_StandardResult()
+func (ps *LibcomposeOrchestratePsOperation) Exec(props api_property.Properties) api_result.Result {
+	res := api_result.New_StandardResult()
 
 	// pass all props to make a project
 	project, _ := MakeComposeProject(props)
@@ -143,11 +156,11 @@ func (ps *LibcomposeOrchestratePsOperation) Exec(props *api_operation.Properties
 	if netContextProp, found := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_CONTEXT); found {
 		netContext = netContextProp.Get().(context.Context)
 	} else {
-		result.MarkFinished()
-		result.AddError(errors.New("Libcompose ps operation is missing the context property"))
+		res.MarkFinished()
+		res.AddError(errors.New("Libcompose ps operation is missing the context property"))
 	}
 
-	if result.Success() {
+	if res.Success() {
 		if infoset, err := project.APIProject.Ps(netContext); err == nil {
 			if len(infoset) == 0 {
 				log.Info("No running containers found.")
@@ -160,10 +173,10 @@ func (ps *LibcomposeOrchestratePsOperation) Exec(props *api_operation.Properties
 				}
 			}
 		} else {
-			result.MarkFailed()
-			result.AddError(err)
+			res.MarkFailed()
+			res.AddError(err)
 		}
 	}
 
-	return api_operation.Result(result)
+	return res.Result()
 }

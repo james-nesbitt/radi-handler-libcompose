@@ -5,8 +5,8 @@ import (
 
 	"context"
 
-	api_operation "github.com/wunderkraut/radi-api/operation"
-	handlers_bytesource "github.com/wunderkraut/radi-handlers/bytesource"
+	api_property "github.com/wunderkraut/radi-api/property"
+	handler_bytesource "github.com/wunderkraut/radi-handlers/bytesource"
 )
 
 /**
@@ -24,9 +24,14 @@ type BaseLibcomposeHandler struct {
 }
 
 // Constructor for BaseLibcomposeHandler
-func New_BaseLibcomposeHandler(projectName string, dockerComposeFiles []string, runContext context.Context, outputWriter io.Writer, errorWriter io.Writer, filesettings handlers_bytesource.BytesourceFileSettings) *BaseLibcomposeHandler {
+func New_BaseLibcomposeHandler(projectName string, dockerComposeFiles []string, runContext context.Context, outputWriter io.Writer, errorWriter io.Writer, filesettings handler_bytesource.BytesourceFileSettings) *BaseLibcomposeHandler {
 	baseLibcomposeOp := New_BaseLibcomposeNameFilesOperation(projectName, dockerComposeFiles, runContext, outputWriter, errorWriter, filesettings)
 	return &BaseLibcomposeHandler{LibComposeBaseOp: baseLibcomposeOp}
+}
+
+// Retrieve the BaseLibCompoer Operation
+func (base *BaseLibcomposeHandler) BaseLibcomposeNameFilesOperation() *BaseLibcomposeNameFilesOperation {
+	return base.LibComposeBaseOp
 }
 
 /**
@@ -40,11 +45,11 @@ type BaseLibcomposeNameFilesOperation struct {
 	runContext         context.Context
 	outputWriter       io.Writer
 	errorWriter        io.Writer
-	filesettings       handlers_bytesource.BytesourceFileSettings
+	filesettings       handler_bytesource.BytesourceFileSettings
 }
 
 // Constructor for BaseLibcomposeNameFilesOperation
-func New_BaseLibcomposeNameFilesOperation(projectName string, dockerComposeFiles []string, runContext context.Context, outputWriter io.Writer, errorWriter io.Writer, filesettings handlers_bytesource.BytesourceFileSettings) *BaseLibcomposeNameFilesOperation {
+func New_BaseLibcomposeNameFilesOperation(projectName string, dockerComposeFiles []string, runContext context.Context, outputWriter io.Writer, errorWriter io.Writer, filesettings handler_bytesource.BytesourceFileSettings) *BaseLibcomposeNameFilesOperation {
 	return &BaseLibcomposeNameFilesOperation{
 		projectName:        projectName,
 		dockerComposeFiles: dockerComposeFiles,
@@ -56,31 +61,31 @@ func New_BaseLibcomposeNameFilesOperation(projectName string, dockerComposeFiles
 }
 
 // Provide static Properties for the operation - set values from the default
-func (base *BaseLibcomposeNameFilesOperation) Properties() api_operation.Properties {
-	props := api_operation.Properties{}
+func (base *BaseLibcomposeNameFilesOperation) Properties() api_property.Properties {
+	props := api_property.New_SimplePropertiesEmpty()
 
 	projectName := LibcomposeProjectnameProperty{}
 	projectName.Set(base.projectName)
-	props.Add(api_operation.Property(&projectName))
+	props.Add(api_property.Property(&projectName))
 
-	filesettings := handlers_bytesource.BytesourceFilesettingsProperty{}
+	filesettings := handler_bytesource.BytesourceFilesettingsProperty{}
 	filesettings.Set(base.filesettings)
-	props.Add(api_operation.Property(&filesettings))
+	props.Add(api_property.Property(&filesettings))
 
 	composeFiles := LibcomposeComposefilesProperty{}
 	composeFiles.Set(base.dockerComposeFiles)
-	props.Add(api_operation.Property(&composeFiles))
+	props.Add(api_property.Property(&composeFiles))
 
 	runContext := LibcomposeContextProperty{}
 	runContext.Set(base.runContext)
-	props.Add(api_operation.Property(&runContext))
+	props.Add(api_property.Property(&runContext))
 
 	output := LibcomposeOutputProperty{}
 	output.Set(base.outputWriter)
-	props.Add(api_operation.Property(&output))
+	props.Add(api_property.Property(&output))
 	err := LibcomposeErrorProperty{}
 	err.Set(base.errorWriter)
-	props.Add(api_operation.Property(&err))
+	props.Add(api_property.Property(&err))
 
-	return props
+	return props.Properties()
 }

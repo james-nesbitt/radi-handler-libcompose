@@ -1,3 +1,9 @@
 [submodule "vendor/github.com/docker/libcompose"]
 	path = vendor/github.com/docker/libcompose
 	url = https://github.com/docker/libcompose.git
+[submodule "vendor/github.com/james-nesbitt/init-go"]
+	path = vendor/github.com/james-nesbitt/init-go
+	url = https://github.com/james-nesbitt/init-go.git
+[submodule "vendor/gopkg.in/yaml.v2"]
+	path = vendor/gopkg.in/yaml.v2
+	url = https://gopkg.in/yaml.v2.git

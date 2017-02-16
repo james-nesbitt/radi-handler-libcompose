@@ -8,6 +8,10 @@ import (
 	libCompose_options "github.com/docker/libcompose/project/options"
 
 	api_operation "github.com/wunderkraut/radi-api/operation"
+	api_property "github.com/wunderkraut/radi-api/property"
+	api_result "github.com/wunderkraut/radi-api/result"
+	api_usage "github.com/wunderkraut/radi-api/usage"
+
 	api_orchestrate "github.com/wunderkraut/radi-api/operation/orchestrate"
 )
 
@@ -24,14 +28,14 @@ const (
 type BaseLibcomposeOrchestrateDownParametrizedOperation struct{}
 
 // Provide static Properties for the operation
-func (base *BaseLibcomposeOrchestrateDownParametrizedOperation) Properties() api_operation.Properties {
-	props := api_operation.Properties{}
+func (base *BaseLibcomposeOrchestrateDownParametrizedOperation) Properties() api_property.Properties {
+	props := api_property.New_SimplePropertiesEmpty()
 
-	props.Add(api_operation.Property(&LibcomposeRemoveVolumesProperty{}))
-	props.Add(api_operation.Property(&LibcomposeRemoveImageTypeProperty{}))
-	props.Add(api_operation.Property(&LibcomposeRemoveOrphansProperty{}))
+	props.Add(api_property.Property(&LibcomposeRemoveVolumesProperty{}))
+	props.Add(api_property.Property(&LibcomposeRemoveImageTypeProperty{}))
+	props.Add(api_property.Property(&LibcomposeRemoveOrphansProperty{}))
 
-	return props
+	return props.Properties()
 }
 
 // LibCompose based down orchestrate operation
@@ -41,24 +45,34 @@ type LibcomposeOrchestrateDownOperation struct {
 	BaseLibcomposeOrchestrateDownParametrizedOperation
 }
 
+// Define the libCompose Orchestrate Down operation usage
+func (down *LibcomposeOrchestrateDownOperation) Id() string {
+	return "libcompose."down.BaseOrchestrationDownOperation.Id()
+}
+
+// Define the libCompose Orchestrate Down operation usage
+func (down *LibcomposeOrchestrateDownOperation) Usage() api_usage.Usage {
+	return api_operation.Usage_External()
+}
+
 // Validate the libCompose Orchestrate Down operation
-func (down *LibcomposeOrchestrateDownOperation) Validate() bool {
-	return true
+func (down *LibcomposeOrchestrateDownOperation) Validate() api_result.Result {
+	return api_result.MakeSuccessfulResult()
 }
 
 // Provide static properties for the operation
-func (down *LibcomposeOrchestrateDownOperation) Properties() api_operation.Properties {
-	props := api_operation.Properties{}
+func (down *LibcomposeOrchestrateDownOperation) Properties() api_property.Properties {
+	props := api_property.New_SimplePropertiesEmpty()
 
 	props.Merge(down.BaseLibcomposeOrchestrateDownParametrizedOperation.Properties())
 	props.Merge(down.BaseLibcomposeNameFilesOperation.Properties())
 
-	return props
+	return props.Properties()
 }
 
 // Execute the libCompose Orchestrate Down operation
-func (down *LibcomposeOrchestrateDownOperation) Exec(props *api_operation.Properties) api_operation.Result {
-	result := api_operation.New_StandardResult()
+func (down *LibcomposeOrchestrateDownOperation) Exec(props api_property.Properties) api_result.Result {
+	res := api_result.New_StandardResult()
 
 	// pass all props to make a project
 	project, _ := MakeComposeProject(props)
@@ -71,8 +85,8 @@ func (down *LibcomposeOrchestrateDownOperation) Exec(props *api_operation.Proper
 	if netContextProp, found := props.Get(OPERATION_PROPERTY_LIBCOMPOSE_CONTEXT); found {
 		netContext = netContextProp.Get().(context.Context)
 	} else {
-		result.MarkFailed()
-		result.AddError(errors.New("Libcompose up operation is missing the context property"))
+		res.MarkFailed()
+		res.AddError(errors.New("Libcompose up operation is missing the context property"))
 	}
 
 	// up options
@@ -88,13 +102,13 @@ func (down *LibcomposeOrchestrateDownOperation) Exec(props *api_operation.Proper
 	}
 
 	if err := project.APIProject.Down(netContext, downOptions); err != nil {
-		result.MarkFailed()
-		result.AddError(err)
+		res.MarkFailed()
+		res.AddError(err)
 	} else {
-		result.MarkSuccess()
+		res.MarkSuccess()
 	}
 
-	result.MarkFinished()
+	res.MarkFinished()
 
-	return api_operation.Result(result)
+	return res.Result()
 }

@@ -3,8 +3,9 @@ package libcompose
 import (
 	"errors"
 
-	api_operation "github.com/wunderkraut/radi-api/operation"
 	api_command "github.com/wunderkraut/radi-api/operation/command"
+	api_property "github.com/wunderkraut/radi-api/property"
+	api_result "github.com/wunderkraut/radi-api/result"
 )
 
 /**
@@ -36,23 +37,23 @@ type LibcomposeCommandListOperation struct {
 }
 
 // Validate the operation
-func (list *LibcomposeCommandListOperation) Validate() bool {
-	return true
+func (list *LibcomposeCommandListOperation) Validate() api_result.Result {
+	return api_result.MakeSuccessfulResult()
 }
 
 // Get properties
-func (list *LibcomposeCommandListOperation) Properties() api_operation.Properties {
-	props := api_operation.Properties{}
+func (list *LibcomposeCommandListOperation) Properties() api_property.Properties {
+	props := api_property.New_SimplePropertiesEmpty()
 
 	props.Merge(list.BaseCommandKeyKeysOperation.Properties())
 	props.Merge(list.BaseLibcomposeNameFilesOperation.Properties())
 
-	return props
+	return props.Properties()
 }
 
 // Execute the libCompose Command List operation
-func (list *LibcomposeCommandListOperation) Exec(props *api_operation.Properties) api_operation.Result {
-	result := api_operation.New_StandardResult()
+func (list *LibcomposeCommandListOperation) Exec(props api_property.Properties) api_result.Result {
+	res := api_result.New_StandardResult()
 
 	keyProp, _ := props.Get(api_command.OPERATION_PROPERTY_COMMAND_KEY)
 	keysProp, _ := props.Get(api_command.OPERATION_PROPERTY_COMMAND_KEYS)
@@ -64,15 +65,15 @@ func (list *LibcomposeCommandListOperation) Exec(props *api_operation.Properties
 
 	if keyList, err := list.Wrapper.List(parent); err == nil {
 		keysProp.Set(keyList)
-		result.MarkSuccess()
+		res.MarkSuccess()
 	} else {
-		result.MarkFailed()
-		result.AddError(err)
+		res.MarkFailed()
+		res.AddError(err)
 	}
 
-	result.MarkFinished()
+	res.MarkFinished()
 
-	return api_operation.Result(result)
+	return res.Result()
 }
 
 // LibCompose Command Get operation
@@ -85,23 +86,23 @@ type LibcomposeCommandGetOperation struct {
 }
 
 // Validate the operation
-func (get *LibcomposeCommandGetOperation) Validate() bool {
-	return true
+func (get *LibcomposeCommandGetOperation) Validate() api_result.Result {
+	return api_result.MakeSuccessfulResult()
 }
 
 // Get properties
-func (get *LibcomposeCommandGetOperation) Properties() api_operation.Properties {
-	props := api_operation.Properties{}
+func (get *LibcomposeCommandGetOperation) Properties() api_property.Properties {
+	props := api_property.New_SimplePropertiesEmpty()
 
 	props.Merge(get.BaseCommandKeyCommandOperation.Properties())
 	props.Merge(get.BaseLibcomposeNameFilesOperation.Properties())
 
-	return props
+	return props.Properties()
 }
 
 // Execute the libCompose Command Get operation
-func (get *LibcomposeCommandGetOperation) Exec(props *api_operation.Properties) api_operation.Result {
-	result := api_operation.New_StandardResult()
+func (get *LibcomposeCommandGetOperation) Exec(props api_property.Properties) api_result.Result {
+	res := api_result.New_StandardResult()
 
 	keyProp, _ := props.Get(api_command.OPERATION_PROPERTY_COMMAND_KEY)
 	commandProp, _ := props.Get(api_command.OPERATION_PROPERTY_COMMAND_COMMAND)
@@ -111,20 +112,20 @@ func (get *LibcomposeCommandGetOperation) Exec(props *api_operation.Properties) 
 		if comYml, err := get.Wrapper.Get(key); err == nil {
 			// pass all props to make a project
 			comProps := get.BaseLibcomposeNameFilesOperation.Properties()
-			com := comYml.Command(&comProps)
+			com := comYml.Command(comProps)
 			commandProp.Set(com)
-			result.MarkSuccess()
+			res.MarkSuccess()
 		} else {
-			result.AddError(err)
-			result.MarkFailed()
+			res.AddError(err)
+			res.MarkFailed()
 		}
 
 	} else {
-		result.AddError(errors.New("No command name provided."))
-		result.MarkFailed()
+		res.AddError(errors.New("No command name provided."))
+		res.MarkFailed()
 	}
 
-	result.MarkFinished()
+	res.MarkFinished()
 
-	return api_operation.Result(result)
+	return res.Result()
 }

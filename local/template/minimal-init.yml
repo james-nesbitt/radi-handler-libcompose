@@ -1,0 +1,8 @@
+- Type: File
+  path: .radi/settings.yml
+  Contents: |2
+    Project: wundertest
+- Type: File
+  path: .radi/commands.yml
+  Contents: |2
+    

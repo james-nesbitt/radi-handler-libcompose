@@ -27,7 +27,7 @@ import (
  * the Handlers that are defined in the other files.
  */
 
-// Provide a handler for building all local operations
+// Provide a builder for building all local operations
 type LocalBuilder struct {
 	handler_local.LocalBuilder
 	settings handler_local.LocalAPISettings
